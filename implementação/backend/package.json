@@ -4,8 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon src/index.ts",
-    "test": "jest",
-    "test:coverage": "jest --coverage"
+    "test": "jest"
   },
   "devDependencies": {
     "@babel/core": "^7.24.7",
