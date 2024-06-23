@@ -1,13 +1,20 @@
-// jest.config.cjs
-/** @type {import('jest').Config} */
+/** @type {import('ts-jest').InitialOptionsTsJest} */
 const config = {
-  preset: 'ts-jest/presets/js-with-ts-esm',
+  preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
   transform: {
-    '^.+\\.tsx?$': 'babel-jest',
+    '^.+\\.tsx?$': 'ts-jest',
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  extensionsToTreatAsEsm: ['.ts', '.tsx'],
   coverageReporters: ['clover', 'json', 'lcov', ['text', { skipFull: true }]],
+  collectCoverage: true,
+  collectCoverageFrom: [
+    'src/**/*.{ts,tsx}', 
+    '!src/**/*.d.ts', 
+    '!src/**/index.ts', 
+  ],
+  coverageDirectory: 'coverage',
 };
 
 module.exports = config;
