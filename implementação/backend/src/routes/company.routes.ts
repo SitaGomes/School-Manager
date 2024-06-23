@@ -1,175 +1,29 @@
-import { Router, Request, Response } from "express";
-import { Advantage, PrismaClient } from "@prisma/client";
-import { randomUUID } from "crypto";
-import CompanyService from "../services/companyService.ts";
-import StudentAdvantagesService from "../services/studentAdvantagesService.ts";
+import { Router } from "express";
+import { PrismaClient } from "@prisma/client";
+import CompanyController from "../controllers/company/company.controller.ts";
 
 const prisma = new PrismaClient();
-const companyService = new CompanyService(prisma);
-const studentAdvantageService = new StudentAdvantagesService(prisma);
+const companyController = new CompanyController(prisma);
 const route = Router();
 
-route.get("/", async (req: Request, res: Response) => {
-  const companies = await companyService.getCompanies();
-  return res.status(200).json(companies);
-});
+route.get("/", companyController.getCompanies);
 
-route.post("/login", async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-  const company = await companyService.getCompanyByEmail(email);
+route.post("/login", companyController.loginCompany);
 
-  if (!company || company.password !== password) {
-    return res.status(400).json({ error: "Senha invalida" });
-  }
-  return res.status(200).json(company);
-});
+route.post("/register", companyController.registerCompany);
 
-route.post("/register", async (req: Request, res: Response) => {
-  const { email, password, name, cnpj } = req.body;
+route.post("/profile", companyController.getCompanyProfile);
 
-  if (!email || !password || !name || !cnpj) {
-    return res.status(400).json({ error: "Dados insuficientes" });
-  }
+route.post("/profile/update", companyController.updateCompanyProfile);
 
-  const company = await companyService.createCompany({
-    id: randomUUID(),
-    cnpj,
-    email,
-    name,
-    password,
-  });
+route.post("/advantage", companyController.getCompanyAdvantages);
 
-  return res.status(201).json(company);
-});
+route.post("/advantage/register", companyController.createCompanyAdvantage);
 
-route.post("/profile", async (req: Request, res: Response) => {
-  const { id } = req.body;
+route.post("/advantage/update", companyController.updateCompanyAdvantage);
 
-  if (!id) {
-    return res.status(400).json({ error: "Dados insuficientes" });
-  }
+route.post("/advantage/delete", companyController.deleteCompanyAdvantage);
 
-  const company = await companyService.getCompanyByUUID(id);
-
-  if (!company) {
-    return res.status(400).json({ error: "Empresa não encontrada" });
-  }
-
-  return res.status(200).json(company);
-});
-
-route.post("/profile/update", async (req: Request, res: Response) => {
-  const { id, name, password } = req.body;
-
-  if (!id || !name || !password) {
-    return res.status(400).json({ error: "Dados insuficientes" });
-  }
-
-  const oldCompany = await companyService.getCompanyByUUID(id);
-
-  if (!oldCompany) {
-    return res.status(400).json({ error: "Empresa não encontrada" });
-  }
-
-  const company = await companyService.updateCompany({
-    ...oldCompany,
-    name,
-    password,
-  });
-
-  return res.status(201).json(company);
-});
-
-route.post("/advantage", async (req: Request, res: Response) => {
-  const { id } = req.body;
-
-  if (!id) {
-    return res.status(400).json({ error: "Dados insuficientes" });
-  }
-
-  const company = await companyService.getCompanyByUUID(id);
-
-  if (!company) {
-    return res.status(400).json({ error: "Empresa não encontrada" });
-  }
-
-  return res.status(200).json(company.advantages);
-});
-
-route.post("/advantage/register", async (req: Request, res: Response) => {
-  const { companyId, name, price } = req.body;
-
-  if (!companyId || !name || !price) {
-    return res.status(400).json({ error: "Dados insuficientes" });
-  }
-
-  const advantage = await companyService.addAdvantage(companyId, {
-    id: randomUUID(),
-    name,
-    price,
-    studentId: null,
-  });
-
-  return res.status(201).json(advantage);
-});
-
-route.post("/advantage/update", async (req: Request, res: Response) => {
-  const { companyId, id, name, price } = req.body;
-
-  if (!companyId || !id || !name || !price) {
-    return res.status(400).json({ error: "Dados insuficientes" });
-  }
-
-  const oldAdvantage = await companyService.getAdvantageByUUID(companyId, id);
-
-  const editedAdvantage = oldAdvantage?.advantages
-    .filter((advantage) => advantage.id === id)
-    .reduce((acc, advantage) => {
-      return {
-        ...advantage,
-        name,
-        price,
-      };
-    }, {} as Advantage);
-
-  if (!editedAdvantage) {
-    return res.status(400).json({ error: "Vantagem não encontrada" });
-  }
-
-  const advantage = await companyService.updateAdvantage(editedAdvantage);
-
-  return res.status(201).json(advantage);
-});
-
-route.post("/advantage/delete", async (req: Request, res: Response) => {
-  const { companyId, id } = req.body;
-
-  if (!companyId || !id) {
-    return res.status(400).json({ error: "Dados insuficientes" });
-  }
-
-  const advantage = await companyService.deleteAdvantage(companyId, id);
-
-  return res.status(201).json(advantage);
-});
-
-route.post("/advantage/students", async (req: Request, res: Response) => {
-  const { advantageId } = req.body;
-
-  if (!advantageId) {
-    return res.status(400).json({ error: "Dados insuficientes" });
-  }
-
-  try {
-    const students =
-      await studentAdvantageService.getStudentAdvantagesByAdvantageId(
-        advantageId
-      );
-
-    return res.status(200).json(students);
-  } catch (err) {
-    return res.status(500).json({ error: "Erro ao buscar estudantes" });
-  }
-});
+route.post("/advantage/students", companyController.getCompanyStudents);
 
 export default route;

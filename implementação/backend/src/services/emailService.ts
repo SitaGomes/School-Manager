@@ -5,7 +5,7 @@ class EmailService {
   sengrid = new MailService();
   constructor() {
     this.sengrid.setApiKey(
-      "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"
+      process.env.SENDGRID_API_KEY || ""
     );
   }
 
