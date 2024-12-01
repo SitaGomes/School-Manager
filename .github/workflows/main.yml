@@ -42,21 +42,41 @@ jobs:
         working-directory: backend
         run: npm test
 
+  # deploy:
+  #   needs: build-and-test
+  #   runs-on: ubuntu-latest
+  #   if: success()
+
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v3
+
+  #     - name: Deploy to Docker
+  #       working-directory: backend
+  #       run: |
+  #         docker build -t school-manager .
+  #         docker run -d -p 3000:3000 -e DATABASE_URL=${{ secrets.DATABASE_URL }} school-manager
+
+  #     - name: Clean up old Docker containers
+  #       run: |
+  #         docker container prune -f
   deploy:
-    needs: build-and-test
     runs-on: ubuntu-latest
-    if: success()
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Deploy to Docker
-        working-directory: backend
-        run: |
-          docker build -t school-manager .
-          docker run -d -p 3000:3000 -e DATABASE_URL=${{ secrets.DATABASE_URL }} school-manager
+      - name: Build Docker Image
+        run: docker build -t school-manager .
 
-      - name: Clean up old Docker containers
+      - name: Install Fly.io CLI
         run: |
-          docker container prune -f
+          curl -L https://fly.io/install.sh | sh
+          export PATH="$HOME/.fly/bin:$PATH"
+
+      - name: Authenticate Fly.io
+        run: flyctl auth token ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Deploy to Fly.io
+        run: flyctl deploy --remote-only --dockerfile ./Dockerfile
