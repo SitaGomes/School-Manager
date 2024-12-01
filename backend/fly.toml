@@ -1,0 +1,4 @@
+app = "school-manager"
+
+[build]
+  dockerfile = "./Dockerfile"
