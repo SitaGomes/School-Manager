@@ -55,7 +55,7 @@ jobs:
         working-directory: implementação/backend
         run: |
           docker build -t school-manager .
-          docker run -d -p 3000:3000 --env-file .env school-manager
+          docker run -d -p 3000:3000 -e DATABASE_URL=${{ secrets.DATABASE_URL }} school-manager
 
       - name: Clean up old Docker containers
         run: |
