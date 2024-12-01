@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon src/index.ts",
+    "start": "nodemon src/index.ts",
     "test": "jest"
   },
   "devDependencies": {
