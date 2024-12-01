@@ -28,18 +28,18 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install dependencies
-        working-directory: implementação/backend
+        working-directory: backend
         run: npm install
 
       - name: Set up environment
-        run: echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > implementação/backend/.env
+        run: echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" > backend/.env
 
       - name: Run Prisma migrations
-        working-directory: implementação/backend
+        working-directory: backend
         run: npx prisma migrate deploy
 
       - name: Run tests
-        working-directory: implementação/backend
+        working-directory: backend
         run: npm test
 
   deploy:
@@ -52,7 +52,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Deploy to Docker
-        working-directory: implementação/backend
+        working-directory: backend
         run: |
           docker build -t school-manager .
           docker run -d -p 3000:3000 -e DATABASE_URL=${{ secrets.DATABASE_URL }} school-manager
